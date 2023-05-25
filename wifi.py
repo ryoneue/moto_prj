@@ -3,10 +3,6 @@ import network
 
 class Wifi():
     def __init__(self, ssid, password):    
-        #自宅Wi-FiのSSIDとパスワードを入力
-        #     ssid = 'Buffalo-G-F5A0'
-        #     password = 'mck4wuvu7eypn'
-
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(True)
         self.wlan.connect(ssid, password)

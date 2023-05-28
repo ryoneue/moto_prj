@@ -6,10 +6,21 @@ import socket
 from machine import Pin
 import time
 from wifi import Wifi
-from pio_timer import pio_timer
+#from pio_timer import pio_timer
 from ntp_date import ntp_date
 from machine import RTC
 import json
+
+def set_wifi_info(json_file="info.json"):
+    #Wi-FiのSSIDとパスワードを読み込み
+    with open(json_file) as f:
+        info = json.load(f)
+    ssid = info["ssid"]
+    password = info["password"]
+    access_token = info["access_token"]
+    net = Wifi(ssid, password)
+    status = net.status
+    return net, status, access_token, ssid, password
 
 # html読み込み
 html = ""
@@ -17,29 +28,7 @@ with open("./moto.html", encoding='utf-8') as f:
     for line in f:
         html = html + line
 
-timer = pio_timer(sm=1,freq=10000, pin=26)
-ms = 10000 # カウントしたい秒数を代入
-#     ms = 5000
-timer.active()
-timer.put(ms)
-pin1 = Pin(26)
-
-#自宅Wi-FiのSSIDとパスワードを読み込み
-with open("info.json") as f:
-    info = json.load(f)
-ssid = info["ssid"]
-password = info["password"]
-access_token = info["access_token"]
-
-
-net = Wifi(ssid, password)
-status = net.status
-
-date = ntp_date()
-
-
-# 初期化
-tl = tiny_line(access_token, debug=True)
+net, status, access_token, _, _ = set_wifi_info(json_file="info.json")
 
 # Open socket
 addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
@@ -47,8 +36,11 @@ s = socket.socket()
 s.bind(addr)
 s.listen(1)
 
-print('listening on', addr)
-tl.notify("http://"+status[0])
+# 通知用Line設定
+if not access_token==False or not access_token=="False": 
+    tl = tiny_line(access_token, debug=True)
+    print('listening on', addr)
+    tl.notify("http://"+status[0])
 
 
 """
@@ -65,13 +57,11 @@ M3 = 30000
 
 count = 0
 value = 0
+# 以下ループ処理
+# 変数M1,M2,M3を更新したWebページを作成する（もっと頻度を落としてもいいかも）
 while True:
     try:
-        check = pin1.value()!=value
-        value = pin1.value()
-        if check:
-            count += 1
-            timer.put(ms)
+        date = ntp_date()
         cl, addr = s.accept()
         print('client connected from', addr)
         request = cl.recv(1024)
@@ -79,14 +69,12 @@ while True:
         print(request)
         request = str(request)
         
-#         ledState = "LED is OFF" if led.value() == 0 else "LED is ON" # a compact if-else statement
-        
-        # Create and send response
-#         stateis = ledState
+        # %以下の変数がhtml内部に代入される
         response = html % (date.date, M1, M2, M3)
         cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl.send(response)
         cl.close()
+        # 1秒ごとにページを作成しなおす
         time.sleep(1)
         
     except OSError as e:

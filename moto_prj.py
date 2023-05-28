@@ -53,8 +53,9 @@ with open("./moto.html", encoding='utf-8') as f:
 
 
 # Open socket
-net, status, access_token, _, _ = set_wifi_info(json_file="info.json")
+
 if "MicroPython" in sys.version:
+    net, status, access_token, _, _ = set_wifi_info(json_file="info.json")
     print("status:", type(status[0]))    
     addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
 else:

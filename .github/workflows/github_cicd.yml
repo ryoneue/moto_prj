@@ -21,7 +21,7 @@ jobs:
           python-version: '3.11'
           architecture: 'x64'
       - name: pip install
-        run: pip install -r requirments.txt
+        run: pip install -r requirements.txt
       - name: test cicd
         run: python moto_prj.py 
       # - name: Run develop scripts

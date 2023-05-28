@@ -1,0 +1,26 @@
+name: Action Sample
+
+on:
+  push:
+    branches: 
+      - master
+      - develop
+      - '**'        # matches every branch
+  pull_request:  
+    types: [opened]  
+  workflow_dispatch:
+
+jobs:
+  run-sampleData-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+      - name: test cicd
+        run: python moto_prj.py 
+      # - name: Run develop scripts
+      #   run: python test_ginza.py        

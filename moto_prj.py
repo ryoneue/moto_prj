@@ -59,9 +59,12 @@ if "MicroPython" in sys.version:
     addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
 else:
     host = 'localhost'
+    host = '0.0.0.0'
     port = 8001    
     addr = (host, port)
-    status = ['localhost:8001/']
+    # addr = socket.getaddrinfo('0.0.0.0', 8001)[0][-1]
+    print(addr)
+    # status = ['http://127.0.0.1:8001/']
 s = socket.socket()
 s.bind(addr)
 s.listen(1)

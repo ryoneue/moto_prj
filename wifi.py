@@ -28,3 +28,6 @@ class Wifi():
             status = self.wlan.ifconfig()
             print('ip = ' + status[0])
             self.status = status
+
+       
+        

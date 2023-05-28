@@ -1,5 +1,10 @@
-import usocket as socket
-import ussl as ssl
+import sys
+if "MicroPython" in sys.version:
+    import usocket as socket
+    import ussl as ssl
+else:
+    import socket as socket
+    import ssl as ssl
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ---- percent encoding

@@ -1,4 +1,5 @@
 from tiny_line import tiny_line
+# import threading
 
 
 import socket
@@ -11,6 +12,10 @@ import time
 import json
 import sys
 
+# from flask import Flask, render_template
+
+debug = False
+
 if "MicroPython" in sys.version:
     import urequests as requests
     from wifi import Wifi
@@ -18,105 +23,159 @@ if "MicroPython" in sys.version:
     date = ntp_date()
 else:
     import requests as requests
-    from datetime import datetime as date
+    from datetime import datetime
+    import threading
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
 
     
-head = """
-HTTP/1.1 200 OK
-Content-Type: text/html
+
+class moto_prj:
+    def __init__(self):
+        self.head = """HTTP/1.1 200 OK Content-Type: text/html
 
 """
-def set_wifi_info(json_file="info.json"):
-    #Wi-FiのSSIDとパスワードを読み込み
-    with open(json_file) as f:
-        info = json.load(f)
-    ssid = info["ssid"]
-    password = info["password"]
-    access_token = info["access_token"]
-    if "MicroPython" in sys.version:
-        net = Wifi(ssid, password)
-        status = net.status
-        print("status: ",status)
-    else:
-        net = False
-        status = False
+    def set_wifi_info(self,json_file="info.json"):
+        #Wi-FiのSSIDとパスワードを読み込み
+        with open(json_file) as f:
+            info = json.load(f)
+        ssid = info["ssid"]
+        password = info["password"]
+        access_token = info["access_token"]
+        if "MicroPython" in sys.version:
+            net = Wifi(ssid, password)
+            status = net.status
+            print("status: ",status)
+        else:
+            net = False
+            status = False
+        self.net = net
+        self.status = status
+        self.access_token = access_token
         
-    return net, status, access_token, ssid, password
+        # return net, status, access_token, ssid, password
+
+    def setting(self):
+        if "MicroPython" in sys.version:
+            date = ntp_date()
+            if (not self.access_token==False or not self.access_token=="False"):
+                self.setting_line()            
+        else:
+            date = datetime.now()
+        self.date = date
 
 
-# html読み込み
-html = ""
-with open("./moto.html", encoding='utf-8') as f:
-    for line in f:
-        html = html + line
 
 
 
-# Open socket
+    def load_html(self, debug=False):
+        # html読み込み
+        if debug:
+            file = "./moto_dbg.html"
+        else:
+            file = "./moto.html"
 
-if "MicroPython" in sys.version:
-    net, status, access_token, _, _ = set_wifi_info(json_file="info.json")
-    print("status:", type(status[0]))    
-    addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-else:
-    host = 'localhost'
-    host = '0.0.0.0'
-    port = 8001    
-    addr = (host, port)
-    # addr = socket.getaddrinfo('0.0.0.0', 8001)[0][-1]
-    print(addr)
-    # status = ['http://127.0.0.1:8001/']
-s = socket.socket()
-s.bind(addr)
-s.listen(1)
-
-# 通知用Line設定
-if "MicroPython" in sys.version and (not access_token==False or not access_token=="False"): 
-    tl = tiny_line(access_token, debug=True)
-    print('listening on', addr)
-    tl.notify("http://"+status[0])
+        html = ""
+        with open(file, encoding='utf-8') as f:
+            for line in f:
+                html = html + line
+        self.html = html
 
 
-"""
-設備の生産数を検出する処理
-M1 = get_data()
-M2 = get_data()
-M3 = get_data()
-"""
+    def open_socket(self):
+        # Open socket
 
-M1 = 10000
-M2 = 20000
-M3 = 30000
+        if "MicroPython" in sys.version:
+            self.set_wifi_info(json_file="info.json")
+            print("status:", type(self.status[0]))    
+            addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
 
+        else:
 
-count = 0
-value = 0
-
-# 以下ループ処理
-# 変数M1,M2,M3を更新したWebページを作成する（もっと頻度を落としてもいいかも）
-while True:
-    try:
-        now = date.now
-        # cl, addr = s.accept()
-        cl, addr = s.accept()
-        print('client connected from', addr)
-        request = cl.recv(1024).decode('utf-8')
-        print("request:")
-        print(request)
-        # request = str(request)
+            addr = socket.getaddrinfo('0.0.0.0', 8000)[0][-1]
+            print(addr)
+            self.status = "False"
+            self.access_token = "False"
+            # status = ['http://127.0.0.1:8001/']
         
-        # %以下の変数がhtml内部に代入される
-        response = html % (date, M1, M2, M3)
-        if not "MicroPython" in sys.version:
-            response = head + response
-        cl.sendall(response.encode('utf-8'))        
-        # cl.send(response)
-        cl.close()
-        # 1秒ごとにページを作成しなおす
-        time.sleep(1)
+#         self.status = status
+#         self.access_token = access_token
+        self.addr = addr
+
+        self.s = socket.socket()
+        self.s.bind(addr)
+        self.s.listen(1)
         
-    except OSError as e:
-        cl.close()
-        print('connection closed')
+        
+
+    def setting_line(self):
+        # 通知用Line設定
+        
+        tl = tiny_line(self.access_token, debug=True)
+        print('listening on', self.addr)
+        tl.notify("http://"+self.status[0])
+
+    def detect_count(self):
+        """
+        設備の生産数を検出する処理
+        M1 = get_data()
+        M2 = get_data()
+        M3 = get_data()
+        """
+
+        self.M1 = 10000
+        self.M2 = 20000
+        self.M3 = 30000
+
+
+        count = 0
+        value = 0        
+
+    def main_loop(self):
+        # 以下ループ処理
+        # 変数M1,M2,M3を更新したWebページを作成する（もっと頻度を落としてもいいかも）
+        while True:
+            try:
+                # now = date.now
+                # cl, addr = s.accept()
+                cl, addr = self.s.accept()
+                print('client connected from', addr)
+                request = cl.recv(1024).decode('utf-8')
+                print("request:")
+                print(request)
+                # request = str(request)
+                
+                # %以下の変数がhtml内部に代入される
+                response = self.html % (self.date, self.M1, self.M2, self.M3)
+        #         if not "MicroPython" in sys.version:
+                response = self.head + response
+                cl.sendall(response.encode('utf-8'))        
+                # cl.send(response)
+                # 1秒ごとにページを作成しなおす
+                time.sleep(1)
+                cl.close()
+
+                
+            except OSError as e:
+                cl.close()
+                print('connection closed')
+
+
+
+func = moto_prj()
+
+func.set_wifi_info(json_file="info.json")
+func.load_html(debug=debug)
+func.open_socket()
+func.setting()
+# func.setting_line()
+
+func.detect_count()
+func.main_loop()
+
+
+
+
+
+
 
     

@@ -1,6 +1,6 @@
 from tiny_line import tiny_line
 # import threading
-
+import argparse
 
 import socket
 # from machine import Pin
@@ -27,10 +27,16 @@ else:
     import threading
     from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-    
+
 
 class moto_prj:
     def __init__(self):
+        
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--debug', type=bool, default=False)
+        args = parser.parse_args()
+        self.debug = args.debug
+
         self.head = """HTTP/1.1 200 OK Content-Type: text/html
 
 """
@@ -67,9 +73,9 @@ class moto_prj:
 
 
 
-    def load_html(self, debug=False):
+    def load_html(self):
         # html読み込み
-        if debug:
+        if self.debug:
             file = "./moto_dbg.html"
         else:
             file = "./moto.html"
@@ -164,7 +170,7 @@ class moto_prj:
 func = moto_prj()
 
 func.set_wifi_info(json_file="info.json")
-func.load_html(debug=debug)
+func.load_html()
 func.open_socket()
 func.setting()
 # func.setting_line()

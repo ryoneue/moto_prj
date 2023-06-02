@@ -169,7 +169,7 @@ class moto_prj:
 
 func = moto_prj()
 
-func.set_wifi_info(json_file="info.json")
+# func.set_wifi_info(json_file="info.json")
 func.load_html()
 func.open_socket()
 func.setting()

@@ -23,6 +23,6 @@ jobs:
       - name: pip install
         run: pip install -r requirements.txt
       - name: test cicd
-        run: python -m pytest .\web-test.py 
+        run: python -m pytest ./web-test.py 
       # - name: Run develop scripts
       #   run: python test_ginza.py        

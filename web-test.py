@@ -14,7 +14,7 @@ from html_check import html_check
 
 class TestCase:
     def test_true(self):
-        cmd = "./test.bat"
+        cmd = "test.bat"
         # p = sp.Popen(cmd, stdout=sp.PIPE, shell=True, creationflags=sp.CREATE_NEW_PROCESS_GROUP)
         p = sp.Popen(cmd, stdout=sp.PIPE, shell=True)
         time.sleep(3)

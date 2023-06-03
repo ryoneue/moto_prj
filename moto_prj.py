@@ -14,7 +14,6 @@ import sys
 
 # from flask import Flask, render_template
 
-debug = False
 
 if "MicroPython" in sys.version:
     import urequests as requests
@@ -40,13 +39,21 @@ class moto_prj:
         self.head = """HTTP/1.1 200 OK Content-Type: text/html
 
 """
-    def set_wifi_info(self,json_file="info.json"):
-        #Wi-FiのSSIDとパスワードを読み込み
+
+    def load_json(self,json_file="info.json"):
+        # 設定用jsonファイルの読み込み
         with open(json_file) as f:
-            info = json.load(f)
-        ssid = info["ssid"]
-        password = info["password"]
-        access_token = info["access_token"]
+            self.info = json.load(f)
+
+
+
+    def set_wifi_info(self):
+        #Wi-FiのSSIDとパスワードを読み込み
+        ssid = self.info["ssid"]
+        password = self.info["password"]
+        access_token = self.info["access_token"]
+
+
         if "MicroPython" in sys.version:
             net = Wifi(ssid, password)
             status = net.status
@@ -89,22 +96,19 @@ class moto_prj:
 
     def open_socket(self):
         # Open socket
-
+        port = self.info["port_number"]
         if "MicroPython" in sys.version:
             self.set_wifi_info(json_file="info.json")
             print("status:", type(self.status[0]))    
-            addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+            addr = socket.getaddrinfo('0.0.0.0', port)[0][-1]
 
         else:
 
-            addr = socket.getaddrinfo('0.0.0.0', 8000)[0][-1]
+            addr = socket.getaddrinfo('0.0.0.0', port)[0][-1]
             print(addr)
             self.status = "False"
             self.access_token = "False"
-            # status = ['http://127.0.0.1:8001/']
-        
-#         self.status = status
-#         self.access_token = access_token
+
         self.addr = addr
 
         self.s = socket.socket()
@@ -122,7 +126,7 @@ class moto_prj:
 
     def detect_count(self):
         """
-        設備の生産数を検出する処理
+        設備の生産数を検出する処理を記述
         M1 = get_data()
         M2 = get_data()
         M3 = get_data()
@@ -132,9 +136,6 @@ class moto_prj:
         self.M2 = 20000
         self.M3 = 30000
 
-
-        count = 0
-        value = 0        
 
     def main_loop(self):
         # 以下ループ処理
@@ -148,7 +149,6 @@ class moto_prj:
                 request = cl.recv(1024).decode('utf-8')
                 print("request:")
                 print(request)
-                # request = str(request)
                 
                 # %以下の変数がhtml内部に代入される
                 response = self.html % (self.date, self.M1, self.M2, self.M3)
@@ -170,6 +170,7 @@ class moto_prj:
 func = moto_prj()
 
 # func.set_wifi_info(json_file="info.json")
+func.load_json(json_file="info.json")
 func.load_html()
 func.open_socket()
 func.setting()

@@ -1,4 +1,5 @@
 {"ssid":"Your wifi SSID",
 "password":"Your wifi password",
-"access_token":"Your LINE notify token"
+"access_token":"Your LINE notify token",
+"port_number":"80"
 }

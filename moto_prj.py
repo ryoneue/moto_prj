@@ -1,6 +1,6 @@
 from tiny_line import tiny_line
 # import threading
-import argparse
+
 
 import socket
 # from machine import Pin
@@ -25,16 +25,19 @@ else:
     from datetime import datetime
     import threading
     from http.server import HTTPServer, SimpleHTTPRequestHandler
-
+    import argparse
 
 
 class moto_prj:
     def __init__(self):
-        
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--debug', type=bool, default=False)
-        args = parser.parse_args()
-        self.debug = args.debug
+        # PCでのCI/CDの時のみデバッグモードをTrue
+        if not "MicroPython" in sys.version:
+            parser = argparse.ArgumentParser()
+            parser.add_argument('--debug', type=bool, default=False)
+            args = parser.parse_args()
+            self.debug = args.debug
+        else:
+            self.debug = False
 
         self.head = """HTTP/1.1 200 OK Content-Type: text/html
 
@@ -96,10 +99,13 @@ class moto_prj:
 
     def open_socket(self):
         # Open socket
-        port = self.info["port_number"]
+        port = int(self.info["port_number"])
+        # picowの時のみWIFIの設定
         if "MicroPython" in sys.version:
-            self.set_wifi_info(json_file="info.json")
-            print("status:", type(self.status[0]))    
+            self.set_wifi_info()
+            print("status:", type(self.status[0]))
+            # picowのときはport:80じゃないとダメっぽい？
+            port = 80
             addr = socket.getaddrinfo('0.0.0.0', port)[0][-1]
 
         else:

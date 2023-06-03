@@ -25,4 +25,4 @@ class TestCase:
         for child in parent.children(recursive=True):
             child.kill()
         parent.kill()
-        assert [M1,M2,M3]==["100001","20000","30000"]
+        assert [M1,M2,M3]==["10000","20000","30000"]

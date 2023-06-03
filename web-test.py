@@ -11,16 +11,10 @@ import json
 
 # from requests.adapters import HTTPAdapter, Retry
 
-def load_json(json_file="info.json"):
-    # 設定用jsonファイルの読み込み
-    with open(json_file) as f:
-        info = json.load(f)
-    return info
 
 class TestCase:
     def test_true(self):
         cmd = "test.bat"
-        info = load_json()
 
         # p = sp.Popen(cmd, stdout=sp.PIPE, shell=True, creationflags=sp.CREATE_NEW_PROCESS_GROUP)
         p = sp.Popen(cmd, stdout=sp.PIPE, shell=True)

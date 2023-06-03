@@ -1,2 +1,3 @@
 rem call ./venv/scripts/activate
-python moto_prj.py --debug False
+cp info_sample.json info.json
+python moto_prj.py --debug True

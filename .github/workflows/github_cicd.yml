@@ -1,4 +1,4 @@
-name: Action Sample
+name: Web page test
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-sampleData-test:
+  run-HTML-check-test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3

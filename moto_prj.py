@@ -19,10 +19,13 @@ if "MicroPython" in sys.version:
     import urequests as requests
     from wifi import Wifi
     from ntp_date import ntp_date
-    date = ntp_date()
+    date = ntp_date().now
+    from temperature import Temperature
+    temp = Temperature()
 else:
     import requests as requests
     from datetime import datetime
+    date = datetime.now
     import threading
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     import argparse
@@ -72,12 +75,12 @@ class moto_prj:
 
     def setting(self):
         if "MicroPython" in sys.version:
-            date = ntp_date()
+            # date = ntp_date()
             if (not self.access_token==False or not self.access_token=="False"):
                 self.setting_line()            
-        else:
-            date = datetime.now()
-        self.date = date
+        # else:
+            # date = datetime.now()
+        # self.date = date
 
 
 
@@ -142,13 +145,19 @@ class moto_prj:
         self.M2 = 20000
         self.M3 = 30000
 
+        # salf.M1, self.M2, self.M3 = np.loadtxt()
+        # with open("data_sample.txt", "r") as f:
+
+
 
     def main_loop(self):
         # 以下ループ処理
         # 変数M1,M2,M3を更新したWebページを作成する（もっと頻度を落としてもいいかも）
         while True:
             try:
-                # now = date.now
+                if "MicroPython" in sys.version:
+                    self.M1 = temp.check_temperature()
+                now = date()
                 # cl, addr = s.accept()
                 cl, addr = self.s.accept()
                 print('client connected from', addr)
@@ -157,7 +166,7 @@ class moto_prj:
                 print(request)
                 
                 # %以下の変数がhtml内部に代入される
-                response = self.html % (self.date, self.M1, self.M2, self.M3)
+                response = self.html % (now, self.M1, self.M2, self.M3)
         #         if not "MicroPython" in sys.version:
                 response = self.head + response
                 cl.sendall(response.encode('utf-8'))        

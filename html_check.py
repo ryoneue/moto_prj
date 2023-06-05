@@ -24,5 +24,9 @@ class html_check:
 
 
         print(M1,M2,M3)
-        print("a")
+        # print("a")
         return M1,M2,M3
+    
+if __name__ == '__main__':
+    check = html_check()
+    check.check_text("http://127.0.0.1:8000/")

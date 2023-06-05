@@ -122,7 +122,7 @@ class moto_prj:
 
         self.s = socket.socket()
         self.s.bind(addr)
-        self.s.listen(1)
+        self.s.listen(2)
         
         
 
@@ -140,13 +140,14 @@ class moto_prj:
         M2 = get_data()
         M3 = get_data()
         """
-
+        
         self.M1 = 10000
         self.M2 = 20000
         self.M3 = 30000
 
-        # salf.M1, self.M2, self.M3 = np.loadtxt()
-        # with open("data_sample.txt", "r") as f:
+        with open("data_sample.txt", "r") as f:
+            tmp = f.readlines()
+        self.M1, self.M2, self.M3 = [i.replace("\n", "") for i in tmp]
 
 
 
@@ -156,8 +157,11 @@ class moto_prj:
         while True:
             try:
                 if "MicroPython" in sys.version:
-                    self.M1 = temp.check_temperature()
+                    self.temperature = temp.check_temperature()
+                else:
+                    self.temperature = ""
                 now = date()
+                self.detect_count()
                 # cl, addr = s.accept()
                 cl, addr = self.s.accept()
                 print('client connected from', addr)
@@ -166,7 +170,8 @@ class moto_prj:
                 print(request)
                 
                 # %以下の変数がhtml内部に代入される
-                response = self.html % (now, self.M1, self.M2, self.M3)
+                print(now, self.temperature, self.M1, self.M2, self.M3)
+                response = self.html % (now, self.temperature, self.M1, self.M2, self.M3)
         #         if not "MicroPython" in sys.version:
                 response = self.head + response
                 cl.sendall(response.encode('utf-8'))        

@@ -1,18 +1,25 @@
 import requests
 
 class html_check:
+    def __init__(self, url):
+        self.load_html(url)
+
     def load_html(self, url):
         session = requests.Session()
         response = session.get(url)
         self.text = response.text.split("\n")
 
     def detect_value(self,text, machine_num):
-        for line in text:
+        for i, line in enumerate(text):
             if "number%s" % machine_num in line:
-                text = line
+                value_text = text[i]
+                name_text = text[i-1]
 
-        value = text.split(">")[1].split("<")[0]
-        return value
+
+
+        value = value_text.split(">")[1].split("<")[0]
+        name = name_text.split(">")[1].split("<")[0]
+        return value, name
 
     def detect_time(self):
         text = self.text
@@ -22,29 +29,36 @@ class html_check:
 
         value = sentence.split(">")[1].split("<")[0]
         date = value.split(" ")[0].replace("-","/")
-        return date
+        hour = value.split(" ")[1].split(":")[0]
+        return date, hour
 
-    def check_text(self):
+    def check_machine(self, machine_num):
         # url = 'http://100.64.1.77/'
         # url = 'http://127.0.0.1:8000'
         # url = 'http://100.64.1.77/'
         text = self.text
 
-        M1 = self.detect_value(text,1)
-        M2 = self.detect_value(text,2)
-        M3 = self.detect_value(text,3)
+        date, hour = self.detect_time()
+        info = {}
+        for id in range(machine_num):
+            # print(id)
+            value, name = self.detect_value(text,id+1)
+            info[name] = {hour:value}
+        # M2 = self.detect_value(text,2)
+        # M3 = self.detect_value(text,3)
 
 
-        print(M1,M2,M3)
+        # print(M1,M2,M3)
         # print("a")
-        return M1,M2,M3
+        return {date:info}
     def check_time(self):
         pass
     
 if __name__ == '__main__':
-    check = html_check()
+    
     url = "http://127.0.0.1:8000/"
+    check = html_check(url)
     check.load_html(url)
-    txt = check.check_text()
+    txt = check.check_machine(machine_num=3)
     date = check.detect_time()
-    print(date)
+    print(txt)
